@@ -1,5 +1,5 @@
 # java_de2_project
-[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=Victor-Linard_java_de2_project)](https://sonarcloud.io/summary/new_code?id=Victor-Linard_java_de2_project)
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=Victor-Linard_java_cpam_project)](https://sonarcloud.io/summary/new_code?id=Victor-Linard_java_cpam_project)
 # Subject
 
 Le but du projet est de développer un programme batch java qui devra implémenter les fonctionnalités suivantes:

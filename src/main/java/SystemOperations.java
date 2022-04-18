@@ -11,7 +11,7 @@ public class SystemOperations {
             System.exit(1);
         }
 
-        File dir  = new File(args[0]);
+        File dir = new File(args[0]);
         if (!dir.isDirectory()) {
             System.err.println("NOTICE : the given directory is not valid.");
             System.exit(2);

@@ -1,5 +1,6 @@
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class DatabaseOperations {
     private final String hostname;

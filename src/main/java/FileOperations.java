@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,8 +17,8 @@ public class FileOperations {
         File[] liste = dir.listFiles();
         ArrayList<File> usersCsv = new ArrayList<>();
         if (liste != null)
-            for(File item :  liste)
-                if(item.isFile() && match("^users_\\d{14}.csv$", item.getName()))
+            for (File item : liste)
+                if (item.isFile() && match("^users_\\d{14}.csv$", item.getName()))
                     usersCsv.add(item);
         return usersCsv;
     }
@@ -38,9 +39,12 @@ public class FileOperations {
             try (CSVReader reader = new CSVReader(new FileReader(csv))) {
                 String[] tmpUser;
                 while ((tmpUser = reader.readNext()) != null) {
+                    System.out.println(Arrays.toString(tmpUser));
                     if (inputFormatCorrect(tmpUser)) {
-                        String[] user = prepareForInsert(tmpUser, csv.getName().split("_")[1].split("\\.")[0]);
-                        usersCsvDataValid.add(user);
+                        if (!tmpUser[8].equals("Montant_Remboursement")) {
+                            String[] user = prepareForInsert(tmpUser, csv.getName().split("_")[1].split("\\.")[0]);
+                            usersCsvDataValid.add(user);
+                        }
                     } else {
                         usersCsvDataInvalid.add(tmpUser);
                     }
@@ -62,13 +66,14 @@ public class FileOperations {
     public static boolean inputFormatCorrect(String[] user) {
         boolean formatCorrect = true;
         for (int i=0; i<user.length; i++) {
+            System.out.println(user[i] + " : " + formatCorrect);
             switch (i) {
-                case 0: formatCorrect = !match("^[1|2]\\d{14}$", user[i]); break;
+                case 0: formatCorrect = match("^[1|2]\\d{14}$", user[i]); break;
                 case 1:
-                case 2: formatCorrect = !match("^\\D*$", user[i]); break;
-                case 3: formatCorrect = !match("^\\d{4}-[0-1][0-9]-[0-3][0-9]$", user[i]); break;
-                case 4: formatCorrect = !match("^0[1-9]\\d{8}$", user[i]); break;
-                case 5: formatCorrect = !match("^\\w+@\\w+.\\D+$", user[i]); break;
+                case 2: formatCorrect = match("^\\D*$", user[i]); break;
+                case 3: formatCorrect = match("^\\d{4}-[0-1][0-9]-[0-3][0-9]$", user[i]); break;
+                case 4: formatCorrect = match("^0[1-9]\\d{8}$", user[i]); break;
+                case 5: formatCorrect = match("^\\S+@.+.\\D+$", user[i]); break;
             }
         }
         return formatCorrect;

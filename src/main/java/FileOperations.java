@@ -9,10 +9,17 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
 public class FileOperations {
+    /**
+     * Create ArrayList if Fiels of the valids files into the directory.
+     * @param dir the given directory
+     * @return ArrayList of File
+     */
     public static ArrayList<File> getInputFile(File dir) {
         File[] liste = dir.listFiles();
         ArrayList<File> usersCsv = new ArrayList<>();
@@ -23,12 +30,25 @@ public class FileOperations {
         return usersCsv;
     }
 
+    /**
+     * Shortcut function to use a regex.
+     * @param pattern the regex
+     * @param matcher the string you want to check
+     * @return boolean
+     */
     public static boolean match(String pattern, String matcher) {
         Pattern p = Pattern.compile(pattern);
         Matcher m = p.matcher(matcher);
         return m.matches();
     }
 
+    /**
+     * Read csv files one by one and lines one by one.
+     * Sort lines into valid and invalid format.
+     * Write bad lines into the error directory.
+     * @param usersCsv ArrayList of File to read
+     * @return ArrayList of String[] with the valid entries
+     */
     public static ArrayList<String[]> readCsv(ArrayList<File> usersCsv) {
         ArrayList<String[]> usersCsvDataValid = new ArrayList<>();
         String path = SystemOperations.getPreviousDir(usersCsv.get(0).getPath().split("users_")[0]);
@@ -39,14 +59,15 @@ public class FileOperations {
             try (CSVReader reader = new CSVReader(new FileReader(csv))) {
                 String[] tmpUser;
                 while ((tmpUser = reader.readNext()) != null) {
-                    System.out.println(Arrays.toString(tmpUser));
                     if (inputFormatCorrect(tmpUser)) {
                         if (!tmpUser[8].equals("Montant_Remboursement")) {
                             String[] user = prepareForInsert(tmpUser, csv.getName().split("_")[1].split("\\.")[0]);
                             usersCsvDataValid.add(user);
                         }
                     } else {
-                        usersCsvDataInvalid.add(tmpUser);
+                        // Si on a autre chose que "Numero_Securite_Sociale" dans tmpUSer[0] alors il y a une erreur
+                        if (tmpUser[0].length() != 24)
+                            usersCsvDataInvalid.add(tmpUser);
                     }
                 }
                 if (!usersCsvDataInvalid.isEmpty())
@@ -63,10 +84,14 @@ public class FileOperations {
         return usersCsvDataValid;
     }
 
+    /**
+     * Check for data format with regex
+     * @param user String[] that correspond to a line of a csv
+     * @return boolean
+     */
     public static boolean inputFormatCorrect(String[] user) {
         boolean formatCorrect = true;
         for (int i=0; i<user.length; i++) {
-            System.out.println(user[i] + " : " + formatCorrect);
             switch (i) {
                 case 0: formatCorrect = match("^[1|2]\\d{14}$", user[i]); break;
                 case 1:
@@ -79,6 +104,12 @@ public class FileOperations {
         return formatCorrect;
     }
 
+    /**
+     * Add the timestamp at the end of the user info
+     * @param tmpUser the user to modify
+     * @param timestamp the timestamp to add
+     * @return String[] with the user info ready to insert
+     */
     public static String[] prepareForInsert(String[] tmpUser, String timestamp) {
         String[] user = new String[10];
         for (int i = 0; i < tmpUser.length; i++)
@@ -87,6 +118,12 @@ public class FileOperations {
         return user;
     }
 
+    /**
+     * Write a csv file in the error folder with all the line with incorrect formats
+     * @param usersCsvDataInvalid all the incorrect line
+     * @param path to the ressource folder
+     * @param csv the csv file where the error was
+     */
     public static void writeCsv(ArrayList<String[]> usersCsvDataInvalid, String path, File csv) {
         try (CSVWriter writer = new CSVWriter(new FileWriter(path+"error/"+csv.getName()))) {
             writer.writeAll(usersCsvDataInvalid);

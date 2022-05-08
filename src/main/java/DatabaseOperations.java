@@ -12,6 +12,14 @@ public class DatabaseOperations {
     private Statement statement;
     private static final String baseUrl = "jdbc:postgresql://";
 
+    /**
+     * Constructor of the DatabaseOperations object to access the database
+     * @param hostname ip address or domain name
+     * @param port port of the db
+     * @param database name of the db
+     * @param user username of the db
+     * @param password password of the db
+     */
     public DatabaseOperations(String hostname, String port, String database, String user, String password) {
         this.hostname = hostname;
         this.port = port;
@@ -20,6 +28,9 @@ public class DatabaseOperations {
         this.password = password;
     }
 
+    /**
+     * Open the connection to the database
+     */
     public void openConnection() {
         try{
             Class.forName ("org.postgresql.Driver");
@@ -33,6 +44,9 @@ public class DatabaseOperations {
         } catch(SQLException e) {System.err.println("Erreur de conenxion à la base de données.");}
     }
 
+    /**
+     * Create the statement
+     */
     public void createStatement() {
         try {
             this.statement = this.connection.createStatement();
@@ -40,6 +54,9 @@ public class DatabaseOperations {
         } catch(SQLException e) {System.err.println("Erreur de création du statement.");}
     }
 
+    /**
+     * Close the connection to the db
+     */
     public void closeConnection() {
         try {
             this.connection.close();
@@ -49,6 +66,11 @@ public class DatabaseOperations {
         } catch(SQLException e) {System.err.println("Erreur à la fermeture de la connexion.");}
     }
 
+    /**
+     * Check if the remboursement id exist in the db
+     * @param idR id remboursement
+     * @return boolean
+     */
     public boolean idRemboursementExist(String idR) {
         boolean exist = false;
         try {
@@ -62,21 +84,33 @@ public class DatabaseOperations {
         return exist;
     }
 
-    public void arrayListToDb(ArrayList<String[]> usersCsvDataInvalid) {
+    /**
+     * For each user, decide if there is an insert or an update
+     * @param usersCsvDataValid ArrayList of String[] of the valid users
+     */
+    public void arrayListToDb(ArrayList<String[]> usersCsvDataValid) {
         //cleanDb();
-        for (String[] user : usersCsvDataInvalid)
+        for (String[] user : usersCsvDataValid)
             if (idRemboursementExist(user[6]))
                 insertUser(user, "update");
             else
                 insertUser(user, "insert");
     }
 
+    /**
+     * Delete the entire db
+     */
     public void cleanDb() {
         try {
             this.statement.executeUpdate("DELETE FROM cpam;");
         } catch(SQLException e) {System.err.println("Erreur de suppression des données.");}
     }
 
+    /**
+     * Insert or update users
+     * @param user the user to add or modify
+     * @param action insert or update
+     */
     public void insertUser(String[] user, String action) {
         try {
             String sql = "";
